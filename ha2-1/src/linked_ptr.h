@@ -11,7 +11,7 @@ class linked_ptr
 {
 public:
     linked_ptr()
-        : node(&node, &node)
+        : node(nullptr, nullptr)
         , pointee_(nullptr)
     {
     }
@@ -25,7 +25,7 @@ public:
 
     template <class U>
     explicit linked_ptr(U* pointee)
-        : node(&node, &node)
+        : node(nullptr, nullptr)
         , pointee_(pointee)
     {
     }
@@ -62,10 +62,6 @@ public:
 
     void reset()
     {
-//        pointee_ = nullptr;
-//        drop_me();
-//        node.left_ = &node;
-//        node.right_ = &node;
         linked_ptr temp;
         swap(temp);
     }
@@ -84,9 +80,9 @@ public:
 
     void swap(linked_ptr& other)
     {
-        std::swap(pointee_, other.pointee_);
-        if (!is_neighboring(other) && !is_one_in_list())
+        if (!is_neighboring(other))
         {
+            std::swap(pointee_, other.pointee_);
             std::swap(node, other.node);
             insert_me();
             other.insert_me();
@@ -149,14 +145,26 @@ private:
 
     void insert_me()
     {
-        node.left_->right_ = &node;
-        node.right_->left_ = &node;
+        if (node.left_)
+        {
+            node.left_->right_ = &node;
+        }
+        if (node.right_)
+        {
+            node.right_->left_ = &node;
+        }
     }
 
     void drop_me()
     {
-        node.right_->left_ = node.left_;
-        node.left_->right_ = node.right_;
+        if (node.right_)
+        {
+            node.right_->left_ = node.left_;
+        }
+        if (node.left_)
+        {
+            node.left_->right_ = node.right_;
+        }
     }
 
     bool is_neighboring(const linked_ptr& other) const
@@ -166,7 +174,7 @@ private:
 
     bool is_one_in_list() const
     {
-        return node.right_ == &node;
+        return node.right_ == nullptr && node.left_ == nullptr;
     }
 
     T* pointee_;
