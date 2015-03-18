@@ -6,6 +6,18 @@
 namespace smart_ptr
 {
 
+struct node_t
+{
+    node_t(node_t const* left, node_t const* right)
+        : left_(left)
+        , right_(right)
+    {
+    }
+
+    mutable node_t const* left_;
+    mutable node_t const* right_;
+};
+
 template <class T>
 class linked_ptr
 {
@@ -130,18 +142,10 @@ public:
     }
 
 private:
+    template <class U>
+    friend class linked_ptr;
 
-    struct node_t
-    {
-        node_t(node_t const* left, node_t const* right)
-            : left_(left)
-            , right_(right)
-        {
-        }
-
-        mutable node_t const* left_;
-        mutable node_t const* right_;
-    } node;
+    node_t node;
 
     void insert_me()
     {

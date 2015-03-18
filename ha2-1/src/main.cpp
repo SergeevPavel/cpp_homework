@@ -13,7 +13,8 @@ struct Base
 };
 struct Derived : Base
 {
-    virtual bool is_base() override { return false; }
+    virtual bool is_base() { return false; }
+    virtual ~Derived() {}
 };
 
 static void test_empty_lptr()
@@ -75,19 +76,9 @@ static void test_many_lptr()
 
 static void test_lptr_conversions()
 {
-
-    struct base
-    {
-        virtual bool is_base() { return true; }
-        virtual ~base() {}
-    };
-    struct derived : base
-    {
-        virtual bool is_base() { return false; }
-    };
-    linked_ptr<base> lptr(new base());
+    linked_ptr<Base> lptr(new Base());
     assert(lptr->is_base());
-    lptr = linked_ptr<base>(new derived());
+    lptr = linked_ptr<Base>(new Derived());
     assert(!lptr->is_base());
 }
 
@@ -116,10 +107,17 @@ void test_swap()
     lp1.swap(lp1); // selfswap
 }
 
+void test_copy_from_derived()
+{
+    linked_ptr<Derived> derived(new Derived);
+    linked_ptr<Base> base(derived);
+}
+
 int main()
 {
 //my tests
     test_swap();
+    test_copy_from_derived();
 //    test_non_complete_type();
 
 //other tests
