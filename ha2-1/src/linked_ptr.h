@@ -145,8 +145,6 @@ private:
     template <class U>
     friend class linked_ptr;
 
-    node_t node;
-
     void insert_me()
     {
         if (node.left_)
@@ -182,6 +180,7 @@ private:
     }
 
     T* pointee_;
+    node_t node;
 };
 
 template <class T, class U>
