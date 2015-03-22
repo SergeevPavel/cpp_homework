@@ -24,8 +24,7 @@ public:
         insert_me();
     }
 
-    void insert_me()
-    {
+    void insert_me() const    {
         if (left_)
         {
             left_->right_ = this;
@@ -36,7 +35,7 @@ public:
         }
     }
 
-    void drop_me()
+    void drop_me() const
     {
         if (right_)
         {
@@ -60,7 +59,13 @@ public:
 
     void swap(const node_t& other)
     {
-        //TODO
+        if (!is_neighboring(other))
+        {
+            std::swap(left_, other.left_);
+            std::swap(right_, other.right_);
+            insert_me();
+            other.insert_me();
+        }
     }
 
     ~node_t()
@@ -82,13 +87,6 @@ public:
         : pointee_(nullptr)
     {
     }
-
-//    explicit linked_ptr(T* pointee)
-//        : pointee_(pointee)
-//        , left_(this)
-//        , right_(this)
-//    {
-//    }
 
     template <class U>
     explicit linked_ptr(U* pointee)
@@ -129,11 +127,6 @@ public:
         swap(temp);
     }
 
-//    void reset(T* pointee)
-//    {
-//        // TODO
-//    }
-
     template<class U>
     void reset(U* pointee)
     {
@@ -143,13 +136,8 @@ public:
 
     void swap(linked_ptr& other)
     {
-        if (!node_.is_neighboring(other.node_))
-        {
-            std::swap(pointee_, other.pointee_);
-            std::swap(node_, other.node_);
-            node_.insert_me();
-            other.node_.insert_me();
-        }
+        node_.swap(other.node_);
+        std::swap(pointee_, other.pointee_);
     }
 
     T* get() const
