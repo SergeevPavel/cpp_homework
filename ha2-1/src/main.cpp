@@ -118,7 +118,6 @@ int main()
 //my tests
     test_swap();
     test_copy_from_derived();
-//    test_non_complete_type();
 
 //other tests
     test_constructors();
