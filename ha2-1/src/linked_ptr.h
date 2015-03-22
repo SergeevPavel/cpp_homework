@@ -57,6 +57,11 @@ struct node_t
         return right_ == nullptr && left_ == nullptr;
     }
 
+    ~node_t()
+    {
+        drop_me();
+    }
+
     mutable node_t const* left_;
     mutable node_t const* right_;
 };
@@ -171,11 +176,6 @@ public:
         if (node_.is_one_in_list())
         {
             delete pointee_;
-        }
-        else
-        {
-            pointee_ = nullptr;
-            node_.drop_me();
         }
     }
 
