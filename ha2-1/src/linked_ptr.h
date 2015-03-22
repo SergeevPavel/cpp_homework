@@ -6,25 +6,68 @@
 namespace smart_ptr
 {
 
+namespace
+{
 struct node_t
 {
-    node_t(node_t const* left, node_t const* right)
-        : left_(left)
-        , right_(right)
+    node_t()
+        : left_(nullptr)
+        , right_(nullptr)
     {
+    }
+
+    node_t(node_t const* left)
+        : left_(left)
+        , right_(left->right_)
+    {
+        insert_me();
+    }
+
+    void insert_me()
+    {
+        if (left_)
+        {
+            left_->right_ = this;
+        }
+        if (right_)
+        {
+            right_->left_ = this;
+        }
+    }
+
+    void drop_me()
+    {
+        if (right_)
+        {
+            right_->left_ = left_;
+        }
+        if (left_)
+        {
+            left_->right_ = right_;
+        }
+    }
+
+    bool is_neighboring(const node_t& other) const
+    {
+        return right_ == &other || left_ == &other;
+    }
+
+    bool is_one_in_list() const
+    {
+        return right_ == nullptr && left_ == nullptr;
     }
 
     mutable node_t const* left_;
     mutable node_t const* right_;
 };
+} // anonymous namespace for node_t
 
 template <class T>
 class linked_ptr
 {
 public:
     linked_ptr()
-        : node(nullptr, nullptr)
-        , pointee_(nullptr)
+        : pointee_(nullptr)
     {
     }
 
@@ -37,25 +80,21 @@ public:
 
     template <class U>
     explicit linked_ptr(U* pointee)
-        : node(nullptr, nullptr)
-        , pointee_(pointee)
+        : pointee_(pointee)
     {
     }
 
     linked_ptr(const linked_ptr& other)
-        : node(&other.node, other.node.right_)
+        : node_(&other.node_)
         , pointee_(other.pointee_)
     {
-        // check selfcopy
-        insert_me();
     }
 
     template <class U>
     linked_ptr(const linked_ptr<U>& other)
-        : node(&other.node, other.node.right_)
+        : node_(&other.node_)
         , pointee_(other.pointee_)
     {
-        insert_me();
     }
 
     linked_ptr& operator= (linked_ptr other)
@@ -92,12 +131,12 @@ public:
 
     void swap(linked_ptr& other)
     {
-        if (!is_neighboring(other))
+        if (!node_.is_neighboring(other.node_))
         {
             std::swap(pointee_, other.pointee_);
-            std::swap(node, other.node);
-            insert_me();
-            other.insert_me();
+            std::swap(node_, other.node_);
+            node_.insert_me();
+            other.node_.insert_me();
         }
     }
 
@@ -108,7 +147,7 @@ public:
 
     bool unique() const
     {
-        return is_one_in_list() && (pointee_ != nullptr);
+        return node_.is_one_in_list() && (pointee_ != nullptr);
     }
 
     T* operator-> () const
@@ -118,7 +157,6 @@ public:
 
     T& operator* () const
     {
-        // whats with empty smart_pointer
         return *pointee_;
     }
 
@@ -130,14 +168,14 @@ public:
     ~linked_ptr()
     {
         enum {T_IS_INCOMPLETE_TYPE = sizeof(T)};
-        if (is_one_in_list())
+        if (node_.is_one_in_list())
         {
             delete pointee_;
         }
         else
         {
             pointee_ = nullptr;
-            drop_me();
+            node_.drop_me();
         }
     }
 
@@ -145,42 +183,8 @@ private:
     template <class U>
     friend class linked_ptr;
 
-    void insert_me()
-    {
-        if (node.left_)
-        {
-            node.left_->right_ = &node;
-        }
-        if (node.right_)
-        {
-            node.right_->left_ = &node;
-        }
-    }
-
-    void drop_me()
-    {
-        if (node.right_)
-        {
-            node.right_->left_ = node.left_;
-        }
-        if (node.left_)
-        {
-            node.left_->right_ = node.right_;
-        }
-    }
-
-    bool is_neighboring(const linked_ptr& other) const
-    {
-        return node.right_ == &other.node || node.left_ == &other.node;
-    }
-
-    bool is_one_in_list() const
-    {
-        return node.right_ == nullptr && node.left_ == nullptr;
-    }
-
+    node_t node_;
     T* pointee_;
-    node_t node;
 };
 
 template <class T, class U>
