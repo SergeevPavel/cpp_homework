@@ -8,8 +8,9 @@ namespace smart_ptr
 
 namespace
 {
-struct node_t
+class node_t
 {
+public:
     node_t()
         : left_(nullptr)
         , right_(nullptr)
@@ -57,11 +58,17 @@ struct node_t
         return right_ == nullptr && left_ == nullptr;
     }
 
+    void swap(const node_t& other)
+    {
+        //TODO
+    }
+
     ~node_t()
     {
         drop_me();
     }
 
+private:
     mutable node_t const* left_;
     mutable node_t const* right_;
 };
