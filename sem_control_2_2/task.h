@@ -12,7 +12,6 @@ namespace serialization
 
 // task1 -----------------
 
-
 template <class T>
 typename std::enable_if<std::is_pod<T>::value, void>::type
 read(input_stream& is, T& data)
@@ -40,20 +39,6 @@ write(output_stream& os, const T& data)
 {
     reflect([&os](auto& field, const std::string& name){write(os, field);}, const_cast<T&>(data));
 }
-
-//template <class T>
-//typename std::enable_if<std::is_pod<T>::value, void>::type
-//serialize(input_stream& is, T& data)
-//{
-//    read(is, data);
-//}
-
-//template <class T>
-//typename std::enable_if<std::is_pod<T>::value, void>::type
-//serialize(output_stream& os, T& data)
-//{
-//    write(os, data);
-//}
 
 //task2 -----------------
 
@@ -98,39 +83,6 @@ write(dict& d, const T& data)
 {
     reflect([&d](auto& field, const std::string& name){ write(d.children[name], field); }, const_cast<T&>(data));
 }
-
-//template <class T>
-//typename std::enable_if<std::is_arithmetic<T>::value, void>::type
-//serialize(dict& d, T& data)
-//{
-//    write(d, data);
-//}
-
-//template <class T>
-//typename std::enable_if<std::is_arithmetic<T>::value, void>::type
-//serialize(const dict& d, T& data)
-//{
-//    read(d, data);
-//}
-
-//template <class T>
-//void serialize(const dict& d, T& data, const std::string& name)
-//{
-//    try
-//    {
-//        serialize(d.children.at(name), data);
-//    }
-//    catch(const std::out_of_range& e)
-//    {
-//        data = T();
-//    }
-//}
-
-//template <class T>
-//void serialize(dict& d, T& data, const std::string& name)
-//{
-//    serialize(d.children[name], data);
-//}
 
 } // serialization
 
