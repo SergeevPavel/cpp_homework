@@ -51,18 +51,18 @@ struct not_pod_struct
         return c;
     }
 
-    template <class Stream_t>
-    friend void serialize(Stream_t& s, not_pod_struct&r);
+    template<class visitor_t>
+    friend void reflect(const visitor_t& visitor, not_pod_struct& r);
 private:
     char c;
 };
 
-template<class Stream_t>
-void serialize(Stream_t& s, not_pod_struct& r)
+template<class visitor_t>
+void reflect(const visitor_t& visitor, not_pod_struct& r)
 {
-    serialize(s, r.a);
-    serialize(s, r.b);
-    serialize(s, r.c);
+    visitor(r.a, "a");
+    visitor(r.b, "b");
+    visitor(r.c, "c");
 }
 
 
@@ -104,11 +104,11 @@ struct small_record
 };
 
 
-template <class Dict_t>
-void serialize(Dict_t& d, small_record& sr)
+template <class visitor_t>
+void reflect(const visitor_t& visitor, small_record& sr)
 {
-    serialize(d, sr.letter, "letter");
-    serialize(d, sr.flag, "flag");
+    visitor(sr.letter, "letter");
+    visitor(sr.flag, "flag");
 }
 
 
@@ -125,12 +125,12 @@ struct custom_record
     small_record small;
 };
 
-template <class Dict_t>
-void serialize(Dict_t& d, custom_record& cr)
+template <class visitor_t>
+void reflect(const visitor_t& visitor, custom_record& cr)
 {
-    serialize(d, cr.dvalue, "dvalue");
-    serialize(d, cr.ivalue, "ivalue");
-    serialize(d, cr.small, "small");
+    visitor(cr.dvalue, "dvalue");
+    visitor(cr.ivalue, "ivalue");
+    visitor(cr.small, "small");
 }
 
 void test_dict_arithmetic()
@@ -170,12 +170,12 @@ struct ver0
     char c;
 };
 
-template <class Dict_t>
-void serialize(Dict_t& d, ver0& v0)
+template <class visitor_t>
+void reflect(const visitor_t& visitor, ver0& v0)
 {
-    serialize(d, v0.a, "a");
-    serialize(d, v0.b, "b");
-    serialize(d, v0.c, "c");
+    visitor(v0.a, "a");
+    visitor(v0.b, "b");
+    visitor(v0.c, "c");
 }
 
 struct ver1
@@ -184,11 +184,11 @@ struct ver1
     short b;
 };
 
-template <class Dict_t>
-void serialize(Dict_t& d, ver1& v1)
+template <class visitor_t>
+void reflect(const visitor_t& visitor, ver1& v1)
 {
-    serialize(d, v1.a, "a");
-    serialize(d, v1.b, "b");
+    visitor(v1.a, "a");
+    visitor(v1.b, "b");
 }
 
 // serialize ver1

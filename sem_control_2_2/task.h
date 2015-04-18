@@ -12,32 +12,12 @@ namespace serialization
 
 // task1 -----------------
 
-template <class T>
-typename std::enable_if<std::is_pod<T>::value, void>::type
-serialize(input_stream& is, T& data)
-{
-    read(is, data);
-}
-
-template <class T>
-typename std::enable_if<std::is_pod<T>::value, void>::type
-serialize(output_stream& os, T& data)
-{
-    write(os, data);
-}
 
 template <class T>
 typename std::enable_if<std::is_pod<T>::value, void>::type
 read(input_stream& is, T& data)
 {
     is.read(&data, sizeof(T));
-}
-
-template <class T>
-typename std::enable_if<!(std::is_pod<T>::value), void>::type
-read(input_stream& is, T& data)
-{
-    serialize(is, data);
 }
 
 template <class T>
@@ -49,11 +29,31 @@ write(output_stream& is, const T& data)
 
 template <class T>
 typename std::enable_if<!(std::is_pod<T>::value), void>::type
-write(output_stream& is, const T& data)
+read(input_stream& is, T& data)
 {
-    serialize(is, const_cast<T&>(data));
+    reflect([&is](auto& field, const std::string& name){read(is, field);}, data);
 }
 
+template <class T>
+typename std::enable_if<!(std::is_pod<T>::value), void>::type
+write(output_stream& os, const T& data)
+{
+    reflect([&os](auto& field, const std::string& name){write(os, field);}, const_cast<T&>(data));
+}
+
+//template <class T>
+//typename std::enable_if<std::is_pod<T>::value, void>::type
+//serialize(input_stream& is, T& data)
+//{
+//    read(is, data);
+//}
+
+//template <class T>
+//typename std::enable_if<std::is_pod<T>::value, void>::type
+//serialize(output_stream& os, T& data)
+//{
+//    write(os, data);
+//}
 
 //task2 -----------------
 
@@ -79,48 +79,58 @@ template <class T>
 typename std::enable_if<!std::is_arithmetic<T>::value, void>::type
 read(const dict& d, T& data)
 {
-    serialize(d, data);
+    reflect([&d](auto& field, const std::string& name)
+    {
+        try
+        {
+            read(d.children.at(name), field);
+        }
+        catch(const std::out_of_range& e)
+        {
+            field = typename std::remove_reference<decltype(field)>::type();
+        }
+    }, data);
 }
 
 template <class T>
 typename std::enable_if<!std::is_arithmetic<T>::value, void>::type
 write(dict& d, const T& data)
 {
-    serialize(d, const_cast<T&>(data));
+    reflect([&d](auto& field, const std::string& name){ write(d.children[name], field); }, const_cast<T&>(data));
 }
 
-template <class T>
-typename std::enable_if<std::is_arithmetic<T>::value, void>::type
-serialize(dict& d, T& data)
-{
-    write(d, data);
-}
+//template <class T>
+//typename std::enable_if<std::is_arithmetic<T>::value, void>::type
+//serialize(dict& d, T& data)
+//{
+//    write(d, data);
+//}
 
-template <class T>
-typename std::enable_if<std::is_arithmetic<T>::value, void>::type
-serialize(const dict& d, T& data)
-{
-    read(d, data);
-}
+//template <class T>
+//typename std::enable_if<std::is_arithmetic<T>::value, void>::type
+//serialize(const dict& d, T& data)
+//{
+//    read(d, data);
+//}
 
-template <class T>
-void serialize(const dict& d, T& data, const std::string& name)
-{
-    try
-    {
-        serialize(d.children.at(name), data);
-    }
-    catch(const std::out_of_range& e)
-    {
-        data = T();
-    }
-}
+//template <class T>
+//void serialize(const dict& d, T& data, const std::string& name)
+//{
+//    try
+//    {
+//        serialize(d.children.at(name), data);
+//    }
+//    catch(const std::out_of_range& e)
+//    {
+//        data = T();
+//    }
+//}
 
-template <class T>
-void serialize(dict& d, T& data, const std::string& name)
-{
-    serialize(d.children[name], data);
-}
+//template <class T>
+//void serialize(dict& d, T& data, const std::string& name)
+//{
+//    serialize(d.children[name], data);
+//}
 
 } // serialization
 
