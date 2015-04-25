@@ -5,10 +5,6 @@
 
 using namespace std_utils;
 
-void test_my()
-{
-    lazy_string s(3, 'x');
-}
 
 void test_internal_typedefs()
 {
@@ -72,27 +68,31 @@ void test_assignment_operator()
     assert(str2.empty()); // one of possible states after move
 }
 
-//void test_plus_operator()
-//{
-//    lazy_string str("abc");
-//    str += 'c';
-//    assert(str_equal<lazy_string>(str, "abcc"));
+void test_plus_operator()
+{
+    lazy_string str("abc");
+    str += 'c';
+    assert(str_equal<lazy_string>(str, "abcc"));
 
-//    str = "abc";
-//    assert(str_equal<lazy_string>('c' + str, "cabc"));
-//    assert(str_equal<lazy_string>(str + str, "abcabc"));
-//    assert(str_equal<lazy_string>("123" + str, "123abc"));
-//}
+    str = "abc";
+    assert(str_equal<lazy_string>('c' + str, "cabc"));
+    assert(str_equal<lazy_string>(str + str, "abcabc"));
+    assert(str_equal<lazy_string>("123" + str, "123abc"));
+    assert(str_equal<lazy_string>(str + "123", "abc123"));
+}
 
-//void test_index_operator()
-//{
-//    const lazy_string cstr("1234567890");
-//    lazy_string str("1234567890");
-//    assert(cstr[0] == '1');
-//    auto str_0 = str[0];
-//    assert(str[0] == '1');
-//    assert(str_0 == '1');
-//}
+void test_index_operator()
+{
+    const lazy_string cstr("1234567890");
+    lazy_string str("1234567890");
+    assert(cstr[0] == '1');
+    auto str_0 = str[0];
+    assert(str[0] == '1');
+    assert(str_0 == '1');
+
+    str[0] = 'x';
+    assert(str_equal<lazy_string>(str, "x234567890"));
+}
 
 //void test_relational_operators()
 //{
@@ -129,13 +129,13 @@ void test_c_str()
 //}
 
 int main() {
-    test_my();
+//    test_my();
     test_internal_typedefs();
     test_empty_string();
     test_constructors();
     test_assignment_operator();
-//    test_plus_operator();
-//    test_index_operator();
+    test_plus_operator();
+    test_index_operator();
 //    test_relational_operators();
     test_c_str();
 //    test_swap();

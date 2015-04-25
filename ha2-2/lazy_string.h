@@ -16,6 +16,9 @@ template < class charT,
            class traits = std::char_traits<charT> >
 class lazy_basic_string
 {
+private:
+    class proxy;
+
 public:
     using traits_type = traits;
     using value_type = typename traits_type::char_type;
@@ -28,21 +31,31 @@ public:
 
     lazy_basic_string(const lazy_basic_string& other) = default;
 
+    lazy_basic_string(lazy_basic_string&& other)
+        : buffer_(other.buffer_)
+        , length_(other.length_)
+    {
+        other.clear();
+    }
+
     lazy_basic_string()
-        : buffer(new_copy(""))
+        : buffer_(from_c_str(""))
+        , length_(0)
     {
     }
 
-    lazy_basic_string(const charT* cstr)
-        : buffer(new_copy(cstr))
+    lazy_basic_string(charT const* cstr)
+        : buffer_(from_c_str(cstr))
+        , length_(traits::length(cstr))
     {
     }
 
     lazy_basic_string(size_type count, const charT symbol)
-        : buffer(new charT[count + 1], std::default_delete<charT[]>())
+        : buffer_(new charT[count + 1], std::default_delete<charT[]>())
+        , length_(symbol)
     {
-        traits::assign(buffer.get(), count, symbol);
-        traits::assign(buffer.get()[count], traits::eof());
+        traits::assign(buffer_.get(), count, symbol);
+        traits::assign(buffer_.get()[count], traits::eof());
     }
 
     ~lazy_basic_string() = default;
@@ -58,36 +71,60 @@ public:
 
     lazy_basic_string& operator+=(lazy_basic_string const& other)
     {
-        // TODO
+        std::shared_ptr<charT> dst = std::shared_ptr<charT>(new charT[length_ + other.length_ + 1],
+                std::default_delete<charT[]>());
+        traits::copy(dst.get(), buffer_.get(), length_);
+        traits::copy(dst.get() + length_, other.buffer_.get(), other.length_ + 1);
+        buffer_.swap(dst);
+        length_ += other.length_;
+        return *this;
+    }
+
+    lazy_basic_string& operator+=(const charT c)
+    {
+        std::shared_ptr<charT> dst = std::shared_ptr<charT>(new charT[length_ + 1],
+                std::default_delete<charT[]>());
+        traits::copy(dst.get(), buffer_.get(), length_);
+        traits::assign(dst.get()[length_], c);
+        traits::assign(dst.get()[length_ + 1], traits::eof());
+        buffer_.swap(dst);
+        length_++;
+        return *this;
+    }
+
+    lazy_basic_string::proxy operator[](size_type index)
+    {
+        return proxy(*this, index);
     }
 
     charT const& operator[](size_type index) const
     {
-        return buffer.get()[index];
+        //TODO check index range
+        return buffer_.get()[index];
     }
-
-    // add non const operator[]
 
     // add comparasion operators
 
     void swap(lazy_basic_string& other)
     {
-        buffer.swap(other.buffer);
+        std::swap(length_, other.length_);
+        buffer_.swap(other.buffer_);
     }
 
     void clear()
     {
-        buffer = new_copy("");
+        buffer_ = from_c_str("");
+        length_ = 0;
     }
 
     size_type size() const
     {
-        return traits::length(buffer.get());
+        return length_;
     }
 
     const charT* c_str() const
     {
-        return buffer.get();
+        return buffer_.get();
     }
 
     bool empty() const
@@ -95,8 +132,13 @@ public:
         return size() == 0;
     }
 
+    int compare(const lazy_basic_string& other)
+    {
+
+    }
+
 private:
-    std::shared_ptr<charT> new_copy(charT const* src) const
+    std::shared_ptr<charT> from_c_str(charT const* src) const
     {
         size_type src_len = traits::length(src) + 1;
         std::shared_ptr<charT> dst = std::shared_ptr<charT>(new charT[src_len], std::default_delete<charT[]>());
@@ -104,14 +146,93 @@ private:
         return dst;
     }
 
-    std::shared_ptr<charT> buffer;
+    void create_own_buffer()
+    {
+        if (!buffer_.unique())
+        {
+            std::shared_ptr<charT> new_buffer = from_c_str(buffer_.get());
+            std::swap(buffer_, new_buffer);
+        }
+    }
+
+    class proxy
+    {
+    public:
+        proxy(lazy_basic_string<charT>& owner, size_type index)
+            : owner_(owner)
+            , index_(index)
+        {
+        }
+
+        proxy& operator=(const charT c)
+        {
+            if (!traits::eq(symbol(), c))
+            {
+                owner_.create_own_buffer();
+                symbol() = c;
+            }
+            return *this;
+        }
+
+        operator charT()
+        {
+            return symbol();
+        }
+
+    private:
+        charT& symbol()
+        {
+            return owner_.buffer_.get()[index_];
+        }
+
+        lazy_basic_string<charT>& owner_;
+        size_type index_;
+    };
+
+    std::shared_ptr<charT> buffer_;
+    size_type length_;
 };
 
-template<class charT, class traits>
+template<class charT, class traits = std::char_traits<charT>>
 lazy_basic_string<charT, traits> operator+(lazy_basic_string<charT, traits> const& left,
                                            lazy_basic_string<charT, traits> const& right)
 {
-    // TODO
+    lazy_basic_string<charT, traits> result(left);
+    result += right;
+    return result;
+}
+
+template<class charT, class traits = std::char_traits<charT>>
+lazy_basic_string<charT, traits> operator+(charT const* left,
+                                           lazy_basic_string<charT, traits> const& right)
+{
+    return lazy_basic_string<charT>(left) + right;
+}
+
+template<class charT, class traits = std::char_traits<charT>>
+lazy_basic_string<charT, traits> operator+(lazy_basic_string<charT, traits> const& left,
+                                           charT const* right)
+{
+    return left + lazy_basic_string<charT>(right);
+}
+
+template<class charT, class traits = std::char_traits<charT>>
+lazy_basic_string<charT, traits> operator+(lazy_basic_string<charT, traits> const& left,
+                                           const charT right)
+{
+    lazy_basic_string<charT, traits> result(left);
+    result += right;
+    return result;
+}
+
+template<class charT, class traits = std::char_traits<charT>>
+lazy_basic_string<charT, traits> operator+(const charT left,
+                                           lazy_basic_string<charT, traits> const& right)
+{
+    lazy_basic_string<charT, traits> result;
+    result += left;
+    result += right;
+    return result;
 }
 
 template<class charT, class traits>
