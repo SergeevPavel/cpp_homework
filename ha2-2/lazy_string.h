@@ -132,9 +132,28 @@ public:
         return size() == 0;
     }
 
-    int compare(const lazy_basic_string& other)
+    int compare(const lazy_basic_string& other) const
     {
-
+        int result = traits::compare(buffer_.get(), other.buffer_.get(), std::min(length_, other.length_));
+        if (result == 0)
+        {
+            if (length_ == other.length_)
+            {
+                return 0;
+            }
+            else
+            {
+                if (length_ < other.length_)
+                {
+                    return -1;
+                }
+                else
+                {
+                    return 1;
+                }
+            }
+        }
+        return result;
     }
 
 private:
@@ -235,12 +254,155 @@ lazy_basic_string<charT, traits> operator+(const charT left,
     return result;
 }
 
-template<class charT, class traits>
+template<class charT, class traits = std::char_traits<charT>>
 void swap(lazy_basic_string<charT, traits>& left,
           lazy_basic_string<charT, traits>& right)
 {
     left.swap(right);
 }
+
+// comparation operators
+
+template<class charT, class traits = std::char_traits<charT>>
+bool operator ==(lazy_basic_string<charT, traits> const& left,
+                 lazy_basic_string<charT, traits> const& right)
+{
+    return left.compare(right) == 0;
+}
+
+template<class charT, class traits = std::char_traits<charT>>
+bool operator !=(lazy_basic_string<charT, traits> const& left,
+                 lazy_basic_string<charT, traits> const& right)
+{
+    return left.compare(right) != 0;
+}
+
+
+template<class charT, class traits = std::char_traits<charT>>
+bool operator <(lazy_basic_string<charT, traits> const& left,
+                lazy_basic_string<charT, traits> const& right)
+{
+    return left.compare(right) < 0;
+}
+
+
+template<class charT, class traits = std::char_traits<charT>>
+bool operator <=(lazy_basic_string<charT, traits> const& left,
+                 lazy_basic_string<charT, traits> const& right)
+{
+    return left.compare(right) <= 0;
+}
+
+template<class charT, class traits = std::char_traits<charT>>
+bool operator >(lazy_basic_string<charT, traits> const& left,
+                lazy_basic_string<charT, traits> const& right)
+{
+    return left.compare(right) > 0;
+}
+
+
+template<class charT, class traits = std::char_traits<charT>>
+bool operator >=(lazy_basic_string<charT, traits> const& left,
+                 lazy_basic_string<charT, traits> const& right)
+{
+    return left.compare(right) >= 0;
+}
+
+// maybe try use boost operators
+
+template<class charT, class traits = std::char_traits<charT>>
+bool operator ==(charT const* left,
+                 lazy_basic_string<charT, traits> const& right)
+{
+    return left.compare(right) == 0;
+}
+
+template<class charT, class traits = std::char_traits<charT>>
+bool operator !=(charT const* left,
+                 lazy_basic_string<charT, traits> const& right)
+{
+    return left.compare(right) != 0;
+}
+
+
+template<class charT, class traits = std::char_traits<charT>>
+bool operator <(charT const* left,
+                lazy_basic_string<charT, traits> const& right)
+{
+    return left.compare(right) < 0;
+}
+
+
+template<class charT, class traits = std::char_traits<charT>>
+bool operator <=(charT const* left,
+                 lazy_basic_string<charT, traits> const& right)
+{
+    return left.compare(right) <= 0;
+}
+
+template<class charT, class traits = std::char_traits<charT>>
+bool operator >(charT const* left,
+                lazy_basic_string<charT, traits> const& right)
+{
+    return left.compare(right) > 0;
+}
+
+
+template<class charT, class traits = std::char_traits<charT>>
+bool operator >=(charT const* left,
+                 lazy_basic_string<charT, traits> const& right)
+{
+    return left.compare(right) >= 0;
+}
+
+//
+
+template<class charT, class traits = std::char_traits<charT>>
+bool operator ==(lazy_basic_string<charT, traits> const& left,
+                 charT const* right)
+{
+    return left.compare(right) == 0;
+}
+
+template<class charT, class traits = std::char_traits<charT>>
+bool operator !=(lazy_basic_string<charT, traits> const& left,
+                 charT const* right)
+{
+    return left.compare(right) != 0;
+}
+
+
+template<class charT, class traits = std::char_traits<charT>>
+bool operator <(lazy_basic_string<charT, traits> const& left,
+                charT const* right)
+{
+    return left.compare(right) < 0;
+}
+
+
+template<class charT, class traits = std::char_traits<charT>>
+bool operator <=(lazy_basic_string<charT, traits> const& left,
+                 charT const* right)
+{
+    return left.compare(right) <= 0;
+}
+
+template<class charT, class traits = std::char_traits<charT>>
+bool operator >(lazy_basic_string<charT, traits> const& left,
+                charT const* right)
+{
+    return left.compare(right) > 0;
+}
+
+
+template<class charT, class traits = std::char_traits<charT>>
+bool operator >=(lazy_basic_string<charT, traits> const& left,
+                 charT const* right)
+{
+    return left.compare(right) >= 0;
+}
+
+// end of comparation operators
 
 using lazy_string = lazy_basic_string<char>;
 using lazy_wstring = lazy_basic_string<wchar_t>;

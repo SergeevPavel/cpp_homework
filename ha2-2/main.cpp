@@ -94,14 +94,14 @@ void test_index_operator()
     assert(str_equal<lazy_string>(str, "x234567890"));
 }
 
-//void test_relational_operators()
-//{
-//    assert(lazy_string("fgh") < lazy_string("fgh1"));
-//    assert(lazy_string("z") > lazy_string("fgh1"));
-//    assert(lazy_string("fgH") == lazy_string("fgH"));
-//    assert(lazy_string("fgH") <= lazy_string("fgH"));
-//    assert(lazy_string("fgH") >= lazy_string("fgH"));
-//}
+void test_relational_operators()
+{
+    assert(lazy_string("fgh") < lazy_string("fgh1"));
+    assert(lazy_string("z") > lazy_string("fgh1"));
+    assert(lazy_string("fgH") == lazy_string("fgH"));
+    assert(lazy_string("fgH") <= lazy_string("fgH"));
+    assert(lazy_string("fgH") >= lazy_string("fgH"));
+}
 
 void test_c_str()
 {
@@ -111,22 +111,22 @@ void test_c_str()
     cstr = str.c_str();
 }
 
-//void test_swap()
-//{
-//    lazy_string str1;
-//    lazy_string str2;
-//    str1.swap(str2);
-//    str1 = "123";
-//    str1.swap(str2);
-//    assert(str2 == "123");
-//}
+void test_swap()
+{
+    lazy_string str1;
+    lazy_string str2;
+    str1.swap(str2);
+    str1 = "123";
+    str1.swap(str2);
+    assert(str2 == "123");
+}
 
-//void test_lazy_wstring()
-//{
-//    lazy_wstring str1(L"Hell\xF6\x0A");
-//    lazy_wstring str2(L"Hell\xF6\x0A");
-//    assert(str1 == str2);
-//}
+void test_lazy_wstring()
+{
+    lazy_wstring str1(L"Hell\xF6\x0A");
+    lazy_wstring str2(L"Hell\xF6\x0A");
+    assert(str1 == str2);
+}
 
 int main() {
 //    test_my();
@@ -136,10 +136,10 @@ int main() {
     test_assignment_operator();
     test_plus_operator();
     test_index_operator();
-//    test_relational_operators();
+    test_relational_operators();
     test_c_str();
-//    test_swap();
-//    test_lazy_wstring();
+    test_swap();
+    test_lazy_wstring();
 
     std::cout << "ok!" << std::endl;
     return 0;
