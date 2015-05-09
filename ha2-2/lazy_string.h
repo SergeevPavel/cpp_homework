@@ -10,8 +10,6 @@
 namespace std_utils
 {
 
-// TODO add noexcept
-
 template < class charT,
            class traits = std::char_traits<charT> >
 class lazy_basic_string
@@ -30,13 +28,38 @@ public:
     using size_type = size_t;
 
     lazy_basic_string(const lazy_basic_string& other) = default;
+    lazy_basic_string& operator=(lazy_basic_string const& other) = default;
 
     lazy_basic_string(lazy_basic_string&& other)
-        : buffer_(other.buffer_)
-        , length_(other.length_)
     {
-        other.clear();
+        length_ = other.length_;
+        buffer_ = other.buffer_;
+        other.length_ = 0;
+        other.buffer_.reset();
     }
+
+    lazy_basic_string& operator=(lazy_basic_string&& other)
+    {
+        length_ = other.length_;
+        buffer_ = other.buffer_;
+        other.length_ = 0;
+        other.buffer_.reset();
+        return *this;
+    }
+
+//    lazy_basic_string(lazy_basic_string&& other)
+//        : buffer_(other.buffer_)
+//        , length_(other.length_)
+//    {
+//        other.clear();
+//    }
+
+//    lazy_basic_string& operator=(lazy_basic_string&& other) = default;
+//    {
+//        swap(other);
+//        other.clear();
+//        return *this;
+//    }
 
     lazy_basic_string()
         : buffer_(from_c_str(""))
@@ -52,22 +75,13 @@ public:
 
     lazy_basic_string(size_type count, const charT symbol)
         : buffer_(new charT[count + 1], std::default_delete<charT[]>())
-        , length_(symbol)
+        , length_(count)
     {
         traits::assign(buffer_.get(), count, symbol);
         traits::assign(buffer_.get()[count], traits::eof());
     }
 
     ~lazy_basic_string() = default;
-
-    lazy_basic_string& operator=(lazy_basic_string const& other) = default;
-
-    lazy_basic_string& operator=(lazy_basic_string&& other)
-    {
-        swap(other);
-        other.clear();
-        return *this;
-    }
 
     lazy_basic_string& operator+=(lazy_basic_string const& other)
     {
@@ -82,7 +96,7 @@ public:
 
     lazy_basic_string& operator+=(const charT c)
     {
-        std::shared_ptr<charT> dst = std::shared_ptr<charT>(new charT[length_ + 1],
+        std::shared_ptr<charT> dst = std::shared_ptr<charT>(new charT[length_ + 2],
                 std::default_delete<charT[]>());
         traits::copy(dst.get(), buffer_.get(), length_);
         traits::assign(dst.get()[length_], c);
@@ -99,11 +113,8 @@ public:
 
     charT const& operator[](size_type index) const
     {
-        //TODO check index range
         return buffer_.get()[index];
     }
-
-    // add comparasion operators
 
     void swap(lazy_basic_string& other)
     {
@@ -254,13 +265,6 @@ lazy_basic_string<charT, traits> operator+(const charT left,
     return result;
 }
 
-template<class charT, class traits = std::char_traits<charT>>
-void swap(lazy_basic_string<charT, traits>& left,
-          lazy_basic_string<charT, traits>& right)
-{
-    left.swap(right);
-}
-
 // comparation operators
 
 template<class charT, class traits = std::char_traits<charT>>
@@ -371,14 +375,12 @@ bool operator !=(lazy_basic_string<charT, traits> const& left,
     return left.compare(right) != 0;
 }
 
-
 template<class charT, class traits = std::char_traits<charT>>
 bool operator <(lazy_basic_string<charT, traits> const& left,
                 charT const* right)
 {
     return left.compare(right) < 0;
 }
-
 
 template<class charT, class traits = std::char_traits<charT>>
 bool operator <=(lazy_basic_string<charT, traits> const& left,
@@ -404,8 +406,46 @@ bool operator >=(lazy_basic_string<charT, traits> const& left,
 
 // end of comparation operators
 
+struct ci_char_traits : public std::char_traits<char> {
+    static bool eq(char c1, char c2)
+    {
+        return toupper(c1) == toupper(c2);
+    }
+
+    static bool ne(char c1, char c2)
+    {
+        return toupper(c1) != toupper(c2);
+    }
+
+    static bool lt(char c1, char c2)
+    {
+        return toupper(c1) <  toupper(c2);
+    }
+
+    static int compare(const char* s1, const char* s2, size_t n)
+    {
+        while( n-- != 0 )
+        {
+            if( toupper(*s1) < toupper(*s2) ) return -1;
+            if( toupper(*s1) > toupper(*s2) ) return 1;
+            ++s1; ++s2;
+        }
+        return 0;
+    }
+
+    static const char* find(const char* s, int n, char a)
+    {
+        while( n-- > 0 && toupper(*s) != toupper(a) )
+        {
+            ++s;
+        }
+        return s;
+    }
+};
+
 using lazy_string = lazy_basic_string<char>;
 using lazy_wstring = lazy_basic_string<wchar_t>;
+using lazy_istring = lazy_basic_string<char, ci_char_traits>;
 
 } // std_utils
 

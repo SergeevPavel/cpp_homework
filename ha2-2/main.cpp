@@ -56,8 +56,12 @@ void test_constructors()
     const char *c_str = "abcdefghijklmnop";
     lazy_string str1 = c_str;
     lazy_string str2 = str1;
+    lazy_string str3(3, 'a');
     assert(str_equal<lazy_string>(c_str, str1));
     assert(str_equal<lazy_string>(str1, str2));
+    assert(str_equal<lazy_string>(str3, "aaa"));
+    lazy_string moved(std::move(str1));
+    assert(str_equal<lazy_string>(c_str, moved));
 }
 
 void test_assignment_operator()
@@ -65,7 +69,7 @@ void test_assignment_operator()
     lazy_string str1("abcdefg");
     lazy_string str2("77712312ASD ASD sdasd");
     str1 = std::move(str2);
-    assert(str2.empty()); // one of possible states after move
+//    assert(str2.empty()); // one of possible states after move.
 }
 
 void test_plus_operator()
@@ -92,6 +96,10 @@ void test_index_operator()
 
     str[0] = 'x';
     assert(str_equal<lazy_string>(str, "x234567890"));
+    str[1] = 'y';
+    assert(str_equal<lazy_string>(str, "xy34567890"));
+    char c = str[0];
+    assert(c == 'x');
 }
 
 void test_relational_operators()
@@ -128,8 +136,18 @@ void test_lazy_wstring()
     assert(str1 == str2);
 }
 
+void test_lazy_istring()
+{
+    lazy_istring s( "AbCdE" );
+
+    assert( s == "abcde" );
+    assert( s == "ABCDE" );
+
+    assert( strcmp( s.c_str(), "AbCdE" ) == 0 );
+    assert( strcmp( s.c_str(), "abcde" ) != 0 );
+}
+
 int main() {
-//    test_my();
     test_internal_typedefs();
     test_empty_string();
     test_constructors();
@@ -140,6 +158,7 @@ int main() {
     test_c_str();
     test_swap();
     test_lazy_wstring();
+    test_lazy_istring();
 
     std::cout << "ok!" << std::endl;
     return 0;
