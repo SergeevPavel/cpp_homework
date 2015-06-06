@@ -312,20 +312,20 @@ bool operator >=(lazy_basic_string<charT, traits> const& left,
     return left.compare(right) >= 0;
 }
 
-// maybe try use boost operators
+// char*
 
 template<class charT, class traits = std::char_traits<charT>>
 bool operator ==(charT const* left,
                  lazy_basic_string<charT, traits> const& right)
 {
-    return left.compare(right) == 0;
+    return right.compare(left) == 0;
 }
 
 template<class charT, class traits = std::char_traits<charT>>
 bool operator !=(charT const* left,
                  lazy_basic_string<charT, traits> const& right)
 {
-    return left.compare(right) != 0;
+    return right.compare(left) != 0;
 }
 
 
@@ -333,7 +333,7 @@ template<class charT, class traits = std::char_traits<charT>>
 bool operator <(charT const* left,
                 lazy_basic_string<charT, traits> const& right)
 {
-    return left.compare(right) < 0;
+    return right.compare(left) > 0;
 }
 
 
@@ -341,14 +341,14 @@ template<class charT, class traits = std::char_traits<charT>>
 bool operator <=(charT const* left,
                  lazy_basic_string<charT, traits> const& right)
 {
-    return left.compare(right) <= 0;
+    return right.compare(left) >= 0;
 }
 
 template<class charT, class traits = std::char_traits<charT>>
 bool operator >(charT const* left,
                 lazy_basic_string<charT, traits> const& right)
 {
-    return left.compare(right) > 0;
+    return right.compare(left) < 0;
 }
 
 
@@ -356,7 +356,7 @@ template<class charT, class traits = std::char_traits<charT>>
 bool operator >=(charT const* left,
                  lazy_basic_string<charT, traits> const& right)
 {
-    return left.compare(right) >= 0;
+    return right.compare(left) <= 0;
 }
 
 //

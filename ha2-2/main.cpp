@@ -79,7 +79,16 @@ void test_plus_operator()
     assert(str_equal<lazy_string>(str, "abcc"));
 
     str = "abc";
+    str += "xyz";
+    assert(str_equal<lazy_string>(str, "abcxyz"));
+
+    str = "abc";
+    str += lazy_string("def");
+    assert(str_equal<lazy_string>(str, "abcdef"));
+
+    str = "abc";
     assert(str_equal<lazy_string>('c' + str, "cabc"));
+    assert(str_equal<lazy_string>(str + 'c', "abcc"));
     assert(str_equal<lazy_string>(str + str, "abcabc"));
     assert(str_equal<lazy_string>("123" + str, "123abc"));
     assert(str_equal<lazy_string>(str + "123", "abc123"));
@@ -109,6 +118,18 @@ void test_relational_operators()
     assert(lazy_string("fgH") == lazy_string("fgH"));
     assert(lazy_string("fgH") <= lazy_string("fgH"));
     assert(lazy_string("fgH") >= lazy_string("fgH"));
+
+    assert("fgh" < lazy_string("fgh1"));
+    assert("z" > lazy_string("fgh1"));
+    assert("fgH" == lazy_string("fgH"));
+    assert("fgH" <= lazy_string("fgH"));
+    assert("fgH" >= lazy_string("fgH"));
+
+    assert(lazy_string("fgh") < "fgh1");
+    assert(lazy_string("z") > "fgh1");
+    assert(lazy_string("fgH") == "fgH");
+    assert(lazy_string("fgH") <= "fgH");
+    assert(lazy_string("fgH") >= "fgH");
 }
 
 void test_c_str()
@@ -159,7 +180,6 @@ int main() {
     test_swap();
     test_lazy_wstring();
     test_lazy_istring();
-
     std::cout << "ok!" << std::endl;
     return 0;
 }
